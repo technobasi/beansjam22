@@ -7,18 +7,22 @@ onready var idleSoundPlayer := $IdleSoundPlayer
 onready var endGameLabel := $CanvasLayer/EndGame
 onready var idleSoundTimer := $IdleSoundTimer
 
-var sleepMeter := 33.0
+var sleepMeter := 1.0
 export(float) var sleepDecay = -1
 export(float) var sleepTypeBoost = 1
-
+export(float) var mouseMovementBoost = 0.001
 var keywords := {
 	"COLA": {
 		"value": 10
 	},
 	"KAFFEE": {
 		"value": 15
+	},
+	"UpUpDownDownLeftRightLeftRightBA" : {
+		"value": 100
 	}
 } 
+
 var sleepMode := {
 	"awake": {
 		"max": 100,
@@ -55,8 +59,9 @@ var sleepMode := {
 }
 
 var textBuffer := ""
-
+var startTime: Dictionary 
 func _ready() -> void:
+	startTime = Time.get_datetime_dict_from_system()
 	updateSleepMeter(0)
 	
 func determineSleepMode() -> String:
@@ -75,26 +80,33 @@ func _input(event):
 			checkTextBufferForKeywords()
 			print(textBuffer)
 			updateSleepMeter(sleepTypeBoost)
+	if event is InputEventMouseMotion:
+		updateSleepMeter(mouseMovementBoost)
+	if event is InputEventMouseButton:
+		updateSleepMeter(sleepTypeBoost)
+		
 	
 func checkTextBufferForKeywords():
 	var matchFound: bool = false
 	for k in keywords:
 		if k in textBuffer:
 			sleepMeter+= keywords[k].value
-		
 	if(matchFound):
 		textBuffer = ""
 		
 func _on_SleepTimer_timeout():
 	updateSleepMeter(sleepDecay)
-	if(sleepMeter == 0.0):
+	if(sleepMeter <= 0.0):
 		finishGame()
 	
 func finishGame() -> void:
 	sleepTimer.stop()
 	idleSoundPlayer.stop()
 	idleSoundTimer.stop()
+	var endTime = Time.get_unix_time_from_datetime_dict(Time.get_datetime_dict_from_system())
+	endGameLabel.text = "Game Jam over!\n Du hast " + str(endTime - Time.get_unix_time_from_datetime_dict(startTime)) + " Sekunden durchgehalten!"
 	endGameLabel.show()
+	
 	
 	
 func updateSleepMeter(updateValue: float) -> void:
