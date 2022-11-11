@@ -11,6 +11,14 @@ var sleepMeter := 33.0
 export(float) var sleepDecay = -1
 export(float) var sleepTypeBoost = 1
 
+var keywords := {
+	"COLA": {
+		"value": 10
+	},
+	"KAFFEE": {
+		"value": 15
+	}
+} 
 var sleepMode := {
 	"awake": {
 		"max": 100,
@@ -46,22 +54,37 @@ var sleepMode := {
 	}
 }
 
+var textBuffer := ""
+
 func _ready() -> void:
 	updateSleepMeter(0)
 	
 func determineSleepMode() -> String:
 	for k in sleepMode:
-		print(sleepMeter)
 		if(sleepMeter > sleepMode[k].min && sleepMeter <= sleepMode[k].max):
 			return k
+	
+	if sleepMeter > sleepMode.awake.max:
+		return "awake"
 	return "oops"
 
 func _input(event):
 	if event is InputEventKey:
 		if event.pressed:
+			textBuffer += OS.get_scancode_string(event.scancode)
+			checkTextBufferForKeywords()
+			print(textBuffer)
 			updateSleepMeter(sleepTypeBoost)
 	
-
+func checkTextBufferForKeywords():
+	var matchFound: bool = false
+	for k in keywords:
+		if k in textBuffer:
+			sleepMeter+= keywords[k].value
+		
+	if(matchFound):
+		textBuffer = ""
+		
 func _on_SleepTimer_timeout():
 	updateSleepMeter(sleepDecay)
 	if(sleepMeter == 0.0):
