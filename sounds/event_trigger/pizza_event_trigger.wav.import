@@ -2,12 +2,12 @@
 
 importer="wav"
 type="AudioStreamSample"
-path="res://.import/yawn.wav-f91c76e309a66edd3dfd654140c3c495.sample"
+path="res://.import/pizza_event_trigger.wav-50a1e1d048aec64b3f52aa4b78a8e002.sample"
 
 [deps]
 
-source_file="res://sounds/idle/sleepy/yawn.wav"
-dest_files=[ "res://.import/yawn.wav-f91c76e309a66edd3dfd654140c3c495.sample" ]
+source_file="res://sounds/event_trigger/pizza_event_trigger.wav"
+dest_files=[ "res://.import/pizza_event_trigger.wav-50a1e1d048aec64b3f52aa4b78a8e002.sample" ]
 
 [params]
 

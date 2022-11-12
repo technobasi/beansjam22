@@ -8,6 +8,16 @@
 
 config_version=4
 
+_global_script_classes=[ {
+"base": "Node2D",
+"class": "FullFail",
+"language": "GDScript",
+"path": "res://Scenes/FullFailScene.gd"
+} ]
+_global_script_class_icons={
+"FullFail": ""
+}
+
 [application]
 
 config/name="Beansjam 22"

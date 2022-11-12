@@ -2,12 +2,12 @@
 
 importer="wav"
 type="AudioStreamSample"
-path="res://.import/yawn.wav-f91c76e309a66edd3dfd654140c3c495.sample"
+path="res://.import/help_event_trigger.wav-12cd716341edf38a500b17b655e3a21e.sample"
 
 [deps]
 
-source_file="res://sounds/idle/sleepy/yawn.wav"
-dest_files=[ "res://.import/yawn.wav-f91c76e309a66edd3dfd654140c3c495.sample" ]
+source_file="res://sounds/event_trigger/help_event_trigger.wav"
+dest_files=[ "res://.import/help_event_trigger.wav-12cd716341edf38a500b17b655e3a21e.sample" ]
 
 [params]
 

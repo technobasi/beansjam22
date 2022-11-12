@@ -2,12 +2,12 @@
 
 importer="wav"
 type="AudioStreamSample"
-path="res://.import/yawn.wav-f91c76e309a66edd3dfd654140c3c495.sample"
+path="res://.import/almost_sleeping1.wav-eafd89c66efbbc9c0b41c37c047f578d.sample"
 
 [deps]
 
-source_file="res://sounds/idle/sleepy/yawn.wav"
-dest_files=[ "res://.import/yawn.wav-f91c76e309a66edd3dfd654140c3c495.sample" ]
+source_file="res://sounds/idle/almost_sleeping/almost_sleeping1.wav"
+dest_files=[ "res://.import/almost_sleeping1.wav-eafd89c66efbbc9c0b41c37c047f578d.sample" ]
 
 [params]
 

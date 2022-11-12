@@ -2,12 +2,12 @@
 
 importer="wav"
 type="AudioStreamSample"
-path="res://.import/yawn.wav-f91c76e309a66edd3dfd654140c3c495.sample"
+path="res://.import/cheater.wav-040c67c3b8ea4ff6159f549c0fa61bfc.sample"
 
 [deps]
 
-source_file="res://sounds/idle/sleepy/yawn.wav"
-dest_files=[ "res://.import/yawn.wav-f91c76e309a66edd3dfd654140c3c495.sample" ]
+source_file="res://sounds/voicelines/keywords/konami/cheater.wav"
+dest_files=[ "res://.import/cheater.wav-040c67c3b8ea4ff6159f549c0fa61bfc.sample" ]
 
 [params]
 
