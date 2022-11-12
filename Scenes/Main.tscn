@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=2]
 
-[ext_resource path="res://Game.gd" type="Script" id=1]
+[ext_resource path="res://Scenes/Game.gd" type="Script" id=1]
 
 [node name="Node2D" type="Node2D"]
 
@@ -30,6 +30,8 @@ valign = 1
 [node name="IdleSoundTimer" type="Timer" parent="Game"]
 wait_time = 10.0
 autostart = true
+
+[node name="MainSoundPlayer" type="AudioStreamPlayer2D" parent="Game"]
 
 [connection signal="timeout" from="Game/SleepTimer" to="Game" method="_on_SleepTimer_timeout"]
 [connection signal="timeout" from="Game/IdleSoundTimer" to="Game" method="_on_IdleSoundTimer_timeout"]
