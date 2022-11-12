@@ -28,7 +28,7 @@ align = 1
 valign = 1
 
 [node name="IdleSoundTimer" type="Timer" parent="Game"]
-wait_time = 10.0
+wait_time = 5.0
 autostart = true
 
 [node name="MainSoundPlayer" type="AudioStreamPlayer2D" parent="Game"]

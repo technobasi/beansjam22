@@ -1,0 +1,23 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/drug.wav-532d356f33d76ec086b563a457b3fa31.sample"
+
+[deps]
+
+source_file="res://drug.wav"
+dest_files=[ "res://.import/drug.wav-532d356f33d76ec086b563a457b3fa31.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=0

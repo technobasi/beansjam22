@@ -10,14 +10,16 @@ onready var fullFail := $FullFail
 onready var backgroundPlayer := $BackgroundPlayer
 onready var eventTimer :=$EventTimer
 
-var sleepMeter := 100.0
+var sleepMeter := 66.0
 var gameOver = false
 var textBuffer := ""
-var startTime: Dictionary 
+var startTime: Dictionary
+var lastInputTime: int = 0 
 
 export(float) var sleepDecay = -1
 export(float) var sleepTypeBoost = 1
 export(float) var mouseMovementBoost = 0.001
+export(int) var DECAY_INCREASE_TIME = 5
 
 var events = {
 	"PIZZA": {
@@ -73,12 +75,61 @@ var keywords := {
 			preload("res://sounds/voicelines/keywords/help/help.wav")
 		]
 	},
+	"PIZZA": {
+		"value": 0,
+		"playSound": [
+			preload("res://sounds/voicelines/keywords/pizza/pizza.wav")
+		]
+	},
 	"UpUpDownDownLeftRightLeftRightBA" : {
 		"value": 100,
 		"playSound": [
 			preload("res://sounds/voicelines/keywords/konami/cheater.wav")
 		]
-	}
+	},
+	"DROGE":{
+		"value": 0,
+		"playSound": [
+			preload("res://sounds/voicelines/keywords/drug/drug.wav")
+		]
+	},
+	"DROGEN":{
+		"value": 0,
+		"playSound": [
+			preload("res://sounds/voicelines/keywords/drug/drug.wav")
+		]
+	},
+	"KOKS":{
+		"value": 0,
+		"playSound": [
+			preload("res://sounds/voicelines/keywords/drug/drug.wav")
+		]
+	},
+	"KOKAIN":{
+		"value": 0,
+		"playSound": [
+			preload("res://sounds/voicelines/keywords/drug/drug.wav")
+		]
+	},
+	"HEROIN":{
+		"value": 0,
+		"playSound": [
+			preload("res://sounds/voicelines/keywords/drug/drug.wav")
+		]
+	},
+	"SPEED":{
+		"value": 0,
+		"playSound": [
+			preload("res://sounds/voicelines/keywords/drug/drug.wav")
+		]
+	},
+	"LSD":{
+		"value": 0,
+		"playSound": [
+			preload("res://sounds/voicelines/keywords/drug/drug.wav")
+		]
+	},
+	
 } 
 
 var sleepMode := {
@@ -101,7 +152,15 @@ var sleepMode := {
 		"max": 66,
 		"min": 33,
 		"idleSounds": [
-			preload("res://sounds/idle/sleepy/yawn.wav")
+			preload("res://sounds/idle/sleepy/yawn.wav"),
+			preload("res://sounds/idle/sleepy/yawn2.wav"),
+			preload("res://sounds/idle/sleepy/sleepy1.wav"),
+			preload("res://sounds/idle/sleepy/sleepy2.wav"),
+			preload("res://sounds/idle/sleepy/sleepy3.wav"),
+			preload("res://sounds/idle/sleepy/sleepy4.wav"),
+			preload("res://sounds/idle/sleepy/sleepy5.wav"),
+			preload("res://sounds/idle/sleepy/sleepy6.wav"),
+			preload("res://sounds/idle/sleepy/sleepy7.wav")
 		],
 		"atmo": preload("res://sounds/atmo/sleepy/typing_sleepy.wav"),
 	},
@@ -112,7 +171,8 @@ var sleepMode := {
 		"idleSounds": [
 			preload("res://sounds/idle/almost_sleeping/almost_sleeping1.wav"),
 			preload("res://sounds/idle/almost_sleeping/almost_sleeping2.wav"),
-			preload("res://sounds/idle/almost_sleeping/almost_sleeping3.wav")
+			preload("res://sounds/idle/almost_sleeping/almost_sleeping3.wav"),
+			preload("res://sounds/idle/almost_sleeping/almost_sleeping4.wav")
 		],
 		"atmo": preload("res://sounds/atmo/almost_sleeping/typing_almost_sleeping.wav"),
 	},
@@ -131,6 +191,7 @@ var CURRENT_STATE = "awake"
 
 func _ready() -> void:
 	startTime = Time.get_datetime_dict_from_system()
+	lastInputTime = Time.get_unix_time_from_datetime_dict(Time.get_datetime_dict_from_system())
 	updateSleepMeter(0)
 	#randomize()
 	
@@ -152,22 +213,43 @@ func changeAtmo():
 	backgroundPlayer.stream = sleepMode[CURRENT_STATE].atmo
 	backgroundPlayer.play()
 	background.color = sleepMode[CURRENT_STATE].color
-	
+
+
+ 
+func _process(delta: float) -> void:
+	var now = Time.get_unix_time_from_datetime_dict(Time.get_datetime_dict_from_system())
+	if now - lastInputTime > DECAY_INCREASE_TIME:
+		sleepDecay *= 2
+		lastInputTime = now
+		print("sleepDecay increased")
+var lastInput = null
 func _input(event):
 	if !gameOver:
 		if event is InputEventKey:
 			if event.pressed:
 				fullFail.add_input()
-				textBuffer += OS.get_scancode_string(event.scancode)
+				var currentInput = OS.get_scancode_string(event.scancode)
+				textBuffer += currentInput
 				checkTextBufferForKeywords()
 				print(textBuffer)
-				updateSleepMeter(sleepTypeBoost)
+				if(currentInput != lastInput):
+					updateSleepMeter(sleepTypeBoost)
+				lastInput = currentInput
+				resetSleepDecay()
+				lastInputTime = Time.get_unix_time_from_datetime_dict(Time.get_datetime_dict_from_system())
 		if event is InputEventMouseMotion:
 			updateSleepMeter(mouseMovementBoost)
 		if event is InputEventMouseButton:
-			updateSleepMeter(sleepTypeBoost)
+			if("MOUSE" != lastInput):
+				updateSleepMeter(sleepTypeBoost)
+			lastInput = "MOUSE"
+	
+			resetSleepDecay()
+			lastInputTime = Time.get_unix_time_from_datetime_dict(Time.get_datetime_dict_from_system())
 			fullFail.add_input()
-		
+			
+func resetSleepDecay():
+	sleepDecay = -1
 	
 func checkTextBufferForKeywords():
 	var matchFound: bool = false
@@ -211,30 +293,45 @@ func finishGame() -> void:
 	sleepTimer.stop()
 	idleSoundTimer.stop()
 	eventTimer.stop()
+	set_process(false)
+	set_process_input(false)
 	var endTime = Time.get_unix_time_from_datetime_dict(Time.get_datetime_dict_from_system())
-	endGameLabel.text = "Game Jam over!\n Du hast " + str(endTime - Time.get_unix_time_from_datetime_dict(startTime)) + " Sekunden durchgehalten!"
+	endGameLabel.text = "Game Jam over!\n Du hast " + parse_endTime(endTime) + " durchgehalten!"
 	endGameLabel.show()
 	gameOver = true
 	fullFail.play_tutorial_ending()
 	
+func parse_endTime(endTime) -> String:
+	var timeDiffInSeconds = endTime - Time.get_unix_time_from_datetime_dict(startTime)
+	if(timeDiffInSeconds > 60):
+		return str(timeDiffInSeconds / 60) + " Minuten & " + str(timeDiffInSeconds % 60) +" Sekunden"
+	else:
+		return str(timeDiffInSeconds)+ " Sekunden"
+
 func updateSleepMeter(updateValue: float) -> void:
 	sleepMeter += updateValue
 	determineSleepMode()
+	print(sleepMeter)
 
 
 
 func _on_IdleSoundTimer_timeout():
-	var sleepModeValue = determineSleepMode()
-	sleepMode[sleepModeValue].idleSounds.shuffle()
-	if(sleepMode[sleepModeValue].idleSounds.size() > 0):
-		mainSoundPlayer.stream = sleepMode[sleepModeValue].idleSounds[0]
-		mainSoundPlayer.play()
+	print("idleTimer fired")
+	if(!mainSoundPlayer.playing):
+		var sleepModeValue = determineSleepMode()
+		sleepMode[sleepModeValue].idleSounds.shuffle()
+		if(sleepMode[sleepModeValue].idleSounds.size() > 0):
+			mainSoundPlayer.stream = sleepMode[sleepModeValue].idleSounds[0]
+			mainSoundPlayer.play()
+			idleSoundTimer.wait_time = randi() * 10
 
 func _on_EventTimer_timeout() -> void:
+	print("randomEvent")
 	if(!mainSoundPlayer.playing):
-			events.keys().shuffle()
-			mainSoundPlayer.stream = events.values()[0].sound
-			mainSoundPlayer.play()
-			eventTimer.wait_time = randi() * 10
+		print("playEvent")
+		events.keys().shuffle()
+		mainSoundPlayer.stream = events.values()[0].sound
+		mainSoundPlayer.play()
+		eventTimer.wait_time = randi() * 10
 		
 
