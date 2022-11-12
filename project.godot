@@ -24,6 +24,10 @@ config/name="Beansjam 22"
 run/main_scene="res://Scenes/Main.tscn"
 config/icon="res://icon.png"
 
+[audio]
+
+enable_audio_input=true
+
 [display]
 
 window/dpi/allow_hidpi=true

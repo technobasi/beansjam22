@@ -9,16 +9,20 @@ onready var mainSoundPlayer := $MainSoundPlayer
 onready var fullFail := $FullFail
 onready var backgroundPlayer := $BackgroundPlayer
 onready var eventTimer :=$EventTimer
+onready var tween := $Tween
 
-var sleepMeter := 66.0
+var sleepMeter := 100.0
 var gameOver = false
 var textBuffer := ""
 var startTime: Dictionary
 var lastInputTime: int = 0 
+var effect
+var record_live_index
 
 export(float) var sleepDecay = -1
 export(float) var sleepTypeBoost = 1
 export(float) var mouseMovementBoost = 0.001
+export(float) var microphoneBoost = 0.001
 export(int) var DECAY_INCREASE_TIME = 5
 
 var events = {
@@ -129,14 +133,13 @@ var keywords := {
 			preload("res://sounds/voicelines/keywords/drug/drug.wav")
 		]
 	},
-	
 } 
 
 var sleepMode := {
 	"awake": {
 		"max": 100,
 		"min": 66,
-		"color": Color.gold,
+		"color": Color(0.75,0.75,0.75),
 		"atmo": preload("res://sounds/atmo/awake/typing_awake.wav"),
 		"idleSounds": [
 			preload("res://sounds/idle/awake/awake1.wav"),
@@ -148,7 +151,7 @@ var sleepMode := {
 		]
 	},
 	"sleepy": {
-		"color": Color.orangered,
+		"color": Color(0.50,0.50,0.50),
 		"max": 66,
 		"min": 33,
 		"idleSounds": [
@@ -165,7 +168,7 @@ var sleepMode := {
 		"atmo": preload("res://sounds/atmo/sleepy/typing_sleepy.wav"),
 	},
 	"almost_sleeping": {
-		"color": Color.darkorange,
+		"color": Color(0.20,0.20,0.20),
 		"max": 33,
 		"min":0,
 		"idleSounds": [
@@ -190,10 +193,25 @@ var sleepMode := {
 var CURRENT_STATE = "awake"
 
 func _ready() -> void:
+	record_live_index = AudioServer.get_bus_index('Record')
+	spectrum_analyzer = AudioServer.get_bus_effect_instance(record_live_index, 1)
+	sleepTimer.stop()
+	idleSoundTimer.stop()
+	eventTimer.stop()
+	set_process(false)
+	set_process_input(false)
+	
+func _on_StartSzene_game_start() -> void:
+	sleepTimer.start()
+	idleSoundTimer.start()
+	eventTimer.start()
+	set_process(true)
+	set_process_input(true)
+	backgroundPlayer.play()
 	startTime = Time.get_datetime_dict_from_system()
 	lastInputTime = Time.get_unix_time_from_datetime_dict(Time.get_datetime_dict_from_system())
 	updateSleepMeter(0)
-	#randomize()
+	randomize()
 	
 func determineSleepMode() -> String:
 	var ret = "awake"
@@ -212,16 +230,35 @@ func determineSleepMode() -> String:
 func changeAtmo():
 	backgroundPlayer.stream = sleepMode[CURRENT_STATE].atmo
 	backgroundPlayer.play()
-	background.color = sleepMode[CURRENT_STATE].color
+	tween.interpolate_property(background,"color",background.color,sleepMode[CURRENT_STATE].color,1,Tween.TRANS_LINEAR)
+	tween.start()
 
+const MIN_DB: int = 80
+const MAX_SAMPLES: int = 10
 
- 
+var volume_samples: Array = []
+
+var spectrum_analyzer: AudioEffectSpectrumAnalyzerInstance
+
 func _process(delta: float) -> void:
-	var now = Time.get_unix_time_from_datetime_dict(Time.get_datetime_dict_from_system())
-	if now - lastInputTime > DECAY_INCREASE_TIME:
-		sleepDecay *= 2
-		lastInputTime = now
-		print("sleepDecay increased")
+	# Get the strength of the 0 - 200hz range of audio
+	var magnitude = spectrum_analyzer.get_magnitude_for_frequency_range(
+		0,
+		200
+	).length()
+
+	# Boost the signal and normalize it
+	var energy = clamp((MIN_DB + linear2db(magnitude))/MIN_DB, 0, 1)
+	if energy > 0:
+		print(energy)
+		updateSleepMeter(microphoneBoost)
+	else:
+		var now = Time.get_unix_time_from_datetime_dict(Time.get_datetime_dict_from_system())
+		if now - lastInputTime > DECAY_INCREASE_TIME:
+			sleepDecay *= 2
+			lastInputTime = now
+			print("sleepDecay increased")
+	pass
 var lastInput = null
 func _input(event):
 	if !gameOver:
@@ -334,4 +371,7 @@ func _on_EventTimer_timeout() -> void:
 		mainSoundPlayer.play()
 		eventTimer.wait_time = randi() * 10
 		
+
+
+
 

@@ -1,13 +1,17 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://Scenes/Game.gd" type="Script" id=1]
 [ext_resource path="res://Scenes/FullFailScene.tscn" type="PackedScene" id=2]
 [ext_resource path="res://sounds/atmo/awake/typing_awake.wav" type="AudioStream" id=3]
+[ext_resource path="res://Scenes/StartSzene.tscn" type="PackedScene" id=4]
+
+[sub_resource type="AudioStreamMicrophone" id=1]
 
 [node name="Node2D" type="Node2D"]
 
 [node name="Game" type="Node2D" parent="."]
 script = ExtResource( 1 )
+microphoneBoost = 0.01
 
 [node name="SleepTimer" type="Timer" parent="Game"]
 autostart = true
@@ -17,7 +21,7 @@ autostart = true
 [node name="Background" type="ColorRect" parent="Game/CanvasLayer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color( 1, 0.843137, 0, 1 )
+color = Color( 0.75, 0.75, 0.75, 1 )
 
 [node name="EndGame" type="Label" parent="Game/CanvasLayer"]
 visible = false
@@ -38,12 +42,22 @@ autostart = true
 [node name="BackgroundPlayer" type="AudioStreamPlayer2D" parent="Game"]
 stream = ExtResource( 3 )
 volume_db = -16.847
-autoplay = true
 
 [node name="EventTimer" type="Timer" parent="Game"]
 wait_time = 10.0
 autostart = true
 
+[node name="StartSzene" parent="Game" instance=ExtResource( 4 )]
+visible = false
+
+[node name="Tween" type="Tween" parent="Game"]
+
+[node name="microphoneInput" type="AudioStreamPlayer" parent="Game"]
+stream = SubResource( 1 )
+autoplay = true
+bus = "Record"
+
 [connection signal="timeout" from="Game/SleepTimer" to="Game" method="_on_SleepTimer_timeout"]
 [connection signal="timeout" from="Game/IdleSoundTimer" to="Game" method="_on_IdleSoundTimer_timeout"]
 [connection signal="timeout" from="Game/EventTimer" to="Game" method="_on_EventTimer_timeout"]
+[connection signal="game_start" from="Game/StartSzene" to="Game" method="_on_StartSzene_game_start"]

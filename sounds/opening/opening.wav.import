@@ -2,12 +2,12 @@
 
 importer="wav"
 type="AudioStreamSample"
-path="res://.import/drug.wav-532d356f33d76ec086b563a457b3fa31.sample"
+path="res://.import/opening.wav-b9981363308c4a83f054fc17dac9710a.sample"
 
 [deps]
 
-source_file="res://drug.wav"
-dest_files=[ "res://.import/drug.wav-532d356f33d76ec086b563a457b3fa31.sample" ]
+source_file="res://sounds/opening/opening.wav"
+dest_files=[ "res://.import/opening.wav-b9981363308c4a83f054fc17dac9710a.sample" ]
 
 [params]
 
