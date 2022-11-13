@@ -16,7 +16,7 @@
 
 [node name="Game" type="Node2D" parent="."]
 script = ExtResource( 1 )
-sleepTypeBoost = 1.5
+sleepTypeBoost = 0.5
 mouseMovementBoost = 0.01
 microphoneBoost = 0.015
 

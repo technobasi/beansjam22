@@ -22,6 +22,7 @@ var record_live_index
 
 export(float) var sleepDecay = -1
 export(float) var sleepTypeBoost = 1.0
+export(float) var sleepMouseClickBoost = 1.5
 export(float) var mouseMovementBoost = 0.001
 export(float) var microphoneBoost = 0.001
 export(int) var DECAY_INCREASE_TIME = 5
@@ -71,6 +72,9 @@ var events = {
 	},
 	"HUNGER": {
 		"sound": preload("res://sounds/event_trigger/hunger_event_trigger.wav"),
+	},
+	"PUSH": {
+		"sound": preload("res://sounds/voicelines/keywords/push.wav")
 	}
 }
 
@@ -155,6 +159,24 @@ var keywords := {
 			preload("res://sounds/voicelines/keywords/konami/cheater.wav")
 		]
 	},
+	"MOTHERLOAD" : {
+		"value": 1,
+		"playSound": [
+			preload("res://sounds/voicelines/keywords/konami/cheater.wav")
+		]
+	},
+	"ROSEBUD" : {
+		"value": 1,
+		"playSound": [
+			preload("res://sounds/voicelines/keywords/konami/cheater.wav")
+		]
+	},
+	"LEAVEMEALONE" : {
+		"value": 1,
+		"playSound": [
+			preload("res://sounds/voicelines/keywords/konami/cheater.wav")
+		]
+	},
 	"DROGE":{
 		"value": 0,
 		"playSound": [
@@ -180,12 +202,6 @@ var keywords := {
 		]
 	},
 	"HEROIN":{
-		"value": 0,
-		"playSound": [
-			preload("res://sounds/voicelines/keywords/drug/drug.wav")
-		]
-	},
-	"SPEED":{
 		"value": 0,
 		"playSound": [
 			preload("res://sounds/voicelines/keywords/drug/drug.wav")
@@ -292,6 +308,7 @@ func determineSleepMode() -> String:
 	return ret
 	
 func changeAtmo():
+	resetSleepDecay()
 	backgroundPlayer.stream = sleepMode[CURRENT_STATE].atmo
 	backgroundPlayer.play()
 	tween.interpolate_property(background,"color",background.color,sleepMode[CURRENT_STATE].color,1,Tween.TRANS_LINEAR)
@@ -315,7 +332,8 @@ func _process(_delta: float) -> void:
 	var energy = clamp((MIN_DB + linear2db(magnitude))/MIN_DB, 0, 1)
 	if energy >= 0.4:
 		print(energy)
-		emit_signal("first_input","VOICE")
+		if(!isTutorialNodePlaying()):
+			emit_signal("first_input","VOICE")
 		statistics.VOICE += 1
 		updateSleepMeter(microphoneBoost)
 	else:
@@ -334,23 +352,29 @@ func _input(event):
 				fullFail.add_input()
 				var currentInput = OS.get_scancode_string(event.scancode)
 				textBuffer += currentInput
-				checkTextBufferForKeywords()
+				if "SPEEDRUN" in textBuffer:
+					speedrun()
+				else:
+					checkTextBufferForKeywords()
 				print(textBuffer)
 				if(currentInput != lastInput):
-					emit_signal("first_input","TYPING")
+					if(!isTutorialNodePlaying()):
+						emit_signal("first_input","TYPING")
 					updateSleepMeter(sleepTypeBoost)
 				lastInput = currentInput
 				resetSleepDecay()
 				lastInputTime = Time.get_unix_time_from_datetime_dict(Time.get_datetime_dict_from_system())
 		if event is InputEventMouseMotion:
 			statistics.MOVEMENT += 1
-			emit_signal("first_input","MOVEMENT")
+			if(!isTutorialNodePlaying()):
+				emit_signal("first_input","MOVEMENT")
 			updateSleepMeter(mouseMovementBoost)
 		if event is InputEventMouseButton:
 			if("MOUSE" != lastInput):
 				statistics.CLICK += 1
-				emit_signal("first_input","CLICK")
-				updateSleepMeter(sleepTypeBoost)
+				if(!isTutorialNodePlaying()):
+					emit_signal("first_input","CLICK")
+				updateSleepMeter(sleepMouseClickBoost)
 			lastInput = "MOUSE"
 	
 			resetSleepDecay()
@@ -398,6 +422,11 @@ func checkIfGameIsOver():
 func _on_SleepTimer_timeout():
 	updateSleepMeter(sleepDecay)
 	checkIfGameIsOver()
+
+func speedrun() -> void:
+	finishGame()
+	var endTime = Time.get_unix_time_from_datetime_dict(Time.get_datetime_dict_from_system())
+	endGameLabel.text = "Speedrun! Du hast nach " + parse_endTime(endTime) + " das Spiel abgeschlossen!"
 	
 func finishGame() -> void:
 	sleepTimer.stop()
