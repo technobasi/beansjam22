@@ -42,11 +42,11 @@ valign = 1
 wait_time = 5.0
 autostart = true
 
-[node name="MainSoundPlayer" type="AudioStreamPlayer2D" parent="Game"]
+[node name="MainSoundPlayer" type="AudioStreamPlayer" parent="Game"]
 
 [node name="FullFail" parent="Game" instance=ExtResource( 2 )]
 
-[node name="BackgroundPlayer" type="AudioStreamPlayer2D" parent="Game"]
+[node name="BackgroundPlayer" type="AudioStreamPlayer" parent="Game"]
 stream = ExtResource( 3 )
 volume_db = -16.847
 
