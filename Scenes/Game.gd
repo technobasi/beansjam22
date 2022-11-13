@@ -20,7 +20,7 @@ var lastInputTime: int = 0
 var effect
 var record_live_index
 
-export(float) var sleepDecay = -1
+export(float) var sleepDecay = -1.0
 export(float) var sleepTypeBoost = 1.0
 export(float) var sleepMouseClickBoost = 1.5
 export(float) var mouseMovementBoost = 0.001
@@ -145,6 +145,12 @@ var keywords := {
 		"value": 0,
 		"playSound":[
 			preload("res://sounds/voicelines/keywords/help/help.wav")
+		]
+	},
+	"CHIPS": {
+		"value": 0,
+		"playSound": [
+			preload("res://sounds/voicelines/keywords/pizza/pizza.wav")
 		]
 	},
 	"PIZZA": {
@@ -342,7 +348,14 @@ func _process(_delta: float) -> void:
 			sleepDecay *= 2
 			lastInputTime = now
 			print("sleepDecay increased")
-	pass
+	checkIfGameWon()
+	
+func checkIfGameWon():
+	var endTime = Time.get_unix_time_from_datetime_dict(Time.get_datetime_dict_from_system())
+	var timeInSeconds = calculate_endTimeInSeconds(endTime)
+	if timeInSeconds >= 48*60:
+		finishGame()
+		endGameLabel.text = "Respekt! ich hätte nie gedacht das es jemand so durchzieht.\n du hast den GameJam gewonnen!\n"+ parse_endTime(endTime) + " das Spiel abgeschlossen!\n" + "Sende mir gerne einen Screenshot!" 
 
 func _input(event):
 	if !gameOver:
