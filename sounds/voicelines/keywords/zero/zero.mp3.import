@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://.import/zero.mp3-f315847bf12685502f5f03c2f9b5513f.mp3str"
+
+[deps]
+
+source_file="res://sounds/voicelines/keywords/zero/zero.mp3"
+dest_files=[ "res://.import/zero.mp3-f315847bf12685502f5f03c2f9b5513f.mp3str" ]
+
+[params]
+
+loop=true
+loop_offset=0

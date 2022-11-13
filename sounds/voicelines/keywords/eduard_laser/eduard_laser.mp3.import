@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://.import/eduard_laser.mp3-449f6d65bfbdcac5f1bd6b3408f3a099.mp3str"
+
+[deps]
+
+source_file="res://sounds/voicelines/keywords/eduard_laser/eduard_laser.mp3"
+dest_files=[ "res://.import/eduard_laser.mp3-449f6d65bfbdcac5f1bd6b3408f3a099.mp3str" ]
+
+[params]
+
+loop=true
+loop_offset=0

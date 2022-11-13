@@ -1,0 +1,23 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/hunger_event_trigger.wav-ed06f42bc1690af7dc623cdc96de7df5.sample"
+
+[deps]
+
+source_file="res://sounds/event_trigger/hunger_event_trigger.wav"
+dest_files=[ "res://.import/hunger_event_trigger.wav-ed06f42bc1690af7dc623cdc96de7df5.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=0

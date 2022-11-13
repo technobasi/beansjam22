@@ -37,23 +37,68 @@ var events = {
 	"PIZZA": {
 		"sound": preload("res://sounds/event_trigger/pizza_event_trigger.wav"),
 		"eventDuration": 10,
-		"failSound": preload("res://sounds/event_fail/pizza_event_fail.wav")
+		"failSound": [
+			preload("res://sounds/event_fail/event_fail1.wav"),
+			preload("res://sounds/event_fail/event_fail2.wav"),
+			preload("res://sounds/event_fail/event_fail3.wav")]
 	},
 	"HELP": {
 		"sound": preload("res://sounds/event_trigger/help_event_trigger.wav"),
-
+		"eventDuration": 10,
+		"failSound": [
+			preload("res://sounds/event_fail/event_fail1.wav"),
+			preload("res://sounds/event_fail/event_fail2.wav"),
+			preload("res://sounds/event_fail/event_fail3.wav")]
 	},
 	"COLA": {
 		"sound": preload("res://sounds/event_trigger/cola_event_trigger.wav"),
-
+		"eventDuration": 10,
+		"failSound": [
+			preload("res://sounds/event_fail/event_fail1.wav"),
+			preload("res://sounds/event_fail/event_fail2.wav"),
+			preload("res://sounds/event_fail/event_fail3.wav")]
 	},
 	"KAFFEE": {
 		"sound": preload("res://sounds/event_trigger/kaffee_event_trigger.wav"),
-
+		"eventDuration": 10,
+		"failSound": [
+			preload("res://sounds/event_fail/event_fail1.wav"),
+			preload("res://sounds/event_fail/event_fail2.wav"),
+			preload("res://sounds/event_fail/event_fail3.wav")]
+	},
+	"TRINKEN":{
+		"sound": preload("res://sounds/event_trigger/trinken_event_trigger.wav"),
+	},
+	"HUNGER": {
+		"sound": preload("res://sounds/event_trigger/hunger_event_trigger.wav"),
 	}
 }
 
 var keywords := {
+	"ZERO": {
+		"value":0,
+		"playSound": [
+			preload("res://sounds/voicelines/keywords/zero/zero.mp3")
+		]
+	},
+	"LASER": {
+		"value":0,
+		"playSound": [
+			preload("res://sounds/voicelines/keywords/eduard_laser/eduard_laser.mp3")
+		]
+	},
+	"EDUARD": {
+		"value":0,
+		"playSound": [
+			preload("res://sounds/voicelines/keywords/eduard_laser/eduard_laser.mp3")
+		]
+	},
+	"RAKETENBRAUSE": {
+		"value": 0,
+		"playSound": [
+			preload("res://sounds/voicelines/keywords/raketenbrause.wav")
+		]
+	},
 	"CREDITS": {
 		"value":0,
 		"playSound": [
@@ -385,17 +430,17 @@ func updateSleepMeter(updateValue: float) -> void:
 
 func _on_IdleSoundTimer_timeout():
 	print("idleTimer fired")
-	if(!mainSoundPlayer.playing):
+	if(!mainSoundPlayer.playing && !isTutorialNodePlaying()):
 		var sleepModeValue = determineSleepMode()
 		sleepMode[sleepModeValue].idleSounds.shuffle()
 		if(sleepMode[sleepModeValue].idleSounds.size() > 0):
 			mainSoundPlayer.stream = sleepMode[sleepModeValue].idleSounds[0]
 			mainSoundPlayer.play()
-			idleSoundTimer.wait_time = randi() * 10 + 1
+			idleSoundTimer.wait_time = randi() % 10 + 1
 
 func _on_EventTimer_timeout() -> void:
 	print("randomEvent")
-	if(!mainSoundPlayer.playing):
+	if(!mainSoundPlayer.playing  && !isTutorialNodePlaying()):
 		print("playEvent")
 		var keys = events.keys()
 		keys.shuffle()
@@ -404,7 +449,7 @@ func _on_EventTimer_timeout() -> void:
 		mainSoundPlayer.stream = event.sound
 		mainSoundPlayer.play()
 		handleEvent(event, key)
-		eventTimer.wait_time = randi() * 10 + 1
+		eventTimer.wait_time = randi() % 10 + 1
 
 var openEvents = []
 func handleEvent(event, eventKey):
@@ -414,8 +459,10 @@ func handleEvent(event, eventKey):
 		if openEvents.has(eventKey):
 			#event is failed
 			removeEvent(eventKey)
-			mainSoundPlayer.stream = event.failSound
-			mainSoundPlayer.play()
+			event.failSound.shuffle()
+			if !mainSoundPlayer.playing && !isTutorialNodePlaying():
+				mainSoundPlayer.stream = event.failSound[0]
+				mainSoundPlayer.play()
 			updateSleepMeter(-5)
 		else:
 			updateSleepMeter(5)
@@ -424,6 +471,13 @@ func removeEvent(eventName: String):
 	var index = openEvents.find(eventName)
 	if index != -1:
 		openEvents.remove(index)
+		
+onready var voice := $TutorialNodes/voice
+onready var typing := $TutorialNodes/typing
+onready var movement := $TutorialNodes/movement
+onready var click := $TutorialNodes/click
+func isTutorialNodePlaying() -> bool:
+	return  voice.is_playing() || typing.is_playing() || movement.is_playing() || click.is_playing()
 
 
 

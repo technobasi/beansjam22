@@ -16,7 +16,9 @@
 
 [node name="Game" type="Node2D" parent="."]
 script = ExtResource( 1 )
-microphoneBoost = 0.01
+sleepTypeBoost = 1.5
+mouseMovementBoost = 0.01
+microphoneBoost = 0.015
 
 [node name="SleepTimer" type="Timer" parent="Game"]
 autostart = true

@@ -15,3 +15,6 @@ func playSound() -> void:
 func _on_Game_first_input(type) -> void:
 	if(type == typeToListenFor):
 		playSound()
+		
+func is_playing() -> bool:
+	return player.playing
