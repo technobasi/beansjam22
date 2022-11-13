@@ -1,9 +1,14 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://Scenes/Game.gd" type="Script" id=1]
 [ext_resource path="res://Scenes/FullFailScene.tscn" type="PackedScene" id=2]
 [ext_resource path="res://sounds/atmo/awake/typing_awake.wav" type="AudioStream" id=3]
 [ext_resource path="res://Scenes/StartSzene.tscn" type="PackedScene" id=4]
+[ext_resource path="res://Scenes/TutorialPlayer.tscn" type="PackedScene" id=5]
+[ext_resource path="res://sounds/tutorial/first_click.wav" type="AudioStream" id=6]
+[ext_resource path="res://sounds/tutorial/first_typing.wav" type="AudioStream" id=7]
+[ext_resource path="res://sounds/tutorial/first_movement.wav" type="AudioStream" id=8]
+[ext_resource path="res://sounds/tutorial/first_voice.wav" type="AudioStream" id=9]
 
 [sub_resource type="AudioStreamMicrophone" id=1]
 
@@ -57,7 +62,42 @@ stream = SubResource( 1 )
 autoplay = true
 bus = "Record"
 
+[node name="TutorialNodes" type="Node2D" parent="Game"]
+
+[node name="voice" parent="Game/TutorialNodes" instance=ExtResource( 5 )]
+typeToListenFor = "VOICE"
+
+[node name="AudioStreamPlayer2D" parent="Game/TutorialNodes/voice" index="0"]
+stream = ExtResource( 9 )
+
+[node name="typing" parent="Game/TutorialNodes" instance=ExtResource( 5 )]
+typeToListenFor = "TYPING"
+
+[node name="AudioStreamPlayer2D" parent="Game/TutorialNodes/typing" index="0"]
+stream = ExtResource( 7 )
+
+[node name="movement" parent="Game/TutorialNodes" instance=ExtResource( 5 )]
+typeToListenFor = "MOVEMENT"
+
+[node name="AudioStreamPlayer2D" parent="Game/TutorialNodes/movement" index="0"]
+stream = ExtResource( 8 )
+
+[node name="click" parent="Game/TutorialNodes" instance=ExtResource( 5 )]
+typeToListenFor = "CLICK"
+
+[node name="AudioStreamPlayer2D" parent="Game/TutorialNodes/click" index="0"]
+stream = ExtResource( 6 )
+
+[connection signal="first_input" from="Game" to="Game/TutorialNodes/voice" method="_on_Game_first_input"]
+[connection signal="first_input" from="Game" to="Game/TutorialNodes/typing" method="_on_Game_first_input"]
+[connection signal="first_input" from="Game" to="Game/TutorialNodes/movement" method="_on_Game_first_input"]
+[connection signal="first_input" from="Game" to="Game/TutorialNodes/click" method="_on_Game_first_input"]
 [connection signal="timeout" from="Game/SleepTimer" to="Game" method="_on_SleepTimer_timeout"]
 [connection signal="timeout" from="Game/IdleSoundTimer" to="Game" method="_on_IdleSoundTimer_timeout"]
 [connection signal="timeout" from="Game/EventTimer" to="Game" method="_on_EventTimer_timeout"]
 [connection signal="game_start" from="Game/StartSzene" to="Game" method="_on_StartSzene_game_start"]
+
+[editable path="Game/TutorialNodes/voice"]
+[editable path="Game/TutorialNodes/typing"]
+[editable path="Game/TutorialNodes/movement"]
+[editable path="Game/TutorialNodes/click"]

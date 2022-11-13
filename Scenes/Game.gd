@@ -1,5 +1,6 @@
 extends Node2D
 
+signal first_input(type)
 
 onready var background := $CanvasLayer/Background
 onready var sleepTimer := $SleepTimer
@@ -20,23 +21,31 @@ var effect
 var record_live_index
 
 export(float) var sleepDecay = -1
-export(float) var sleepTypeBoost = 1
+export(float) var sleepTypeBoost = 1.0
 export(float) var mouseMovementBoost = 0.001
 export(float) var microphoneBoost = 0.001
 export(int) var DECAY_INCREASE_TIME = 5
 
 var events = {
 	"PIZZA": {
-		"sound": preload("res://sounds/event_trigger/pizza_event_trigger.wav")
+		"sound": preload("res://sounds/event_trigger/pizza_event_trigger.wav"),
+		"eventDuration": 10,
+		"failSound": preload("res://sounds/event_fail/pizza_event_fail.wav")
 	},
 	"HELP": {
-		"sound": preload("res://sounds/event_trigger/help_event_trigger.wav")
+		"sound": preload("res://sounds/event_trigger/help_event_trigger.wav"),
+		"eventDuration": 10,
+		"failSound": preload("res://sounds/event_fail/pizza_event_fail.wav")
 	},
 	"COLA": {
-		"sound": preload("res://sounds/event_trigger/cola_event_trigger.wav")
+		"sound": preload("res://sounds/event_trigger/cola_event_trigger.wav"),
+		"eventDuration": 10,
+		"failSound": preload("res://sounds/event_fail/pizza_event_fail.wav")
 	},
 	"KAFFEE": {
-		"sound": preload("res://sounds/event_trigger/kaffee_event_trigger.wav")
+		"sound": preload("res://sounds/event_trigger/kaffee_event_trigger.wav"),
+		"eventDuration": 10,
+		"failSound": preload("res://sounds/event_fail/pizza_event_fail.wav")
 	}
 }
 
@@ -240,7 +249,7 @@ var volume_samples: Array = []
 
 var spectrum_analyzer: AudioEffectSpectrumAnalyzerInstance
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	# Get the strength of the 0 - 200hz range of audio
 	var magnitude = spectrum_analyzer.get_magnitude_for_frequency_range(
 		0,
@@ -249,8 +258,10 @@ func _process(delta: float) -> void:
 
 	# Boost the signal and normalize it
 	var energy = clamp((MIN_DB + linear2db(magnitude))/MIN_DB, 0, 1)
-	if energy > 0:
+	if energy >= 0.4:
 		print(energy)
+		emit_signal("first_input","VOICE")
+		statistics.VOICE += 1
 		updateSleepMeter(microphoneBoost)
 	else:
 		var now = Time.get_unix_time_from_datetime_dict(Time.get_datetime_dict_from_system())
@@ -260,24 +271,37 @@ func _process(delta: float) -> void:
 			print("sleepDecay increased")
 	pass
 var lastInput = null
+var statistics := {
+	"TYPING":0,
+	"MOVEMENT":0,
+	"VOICE":0,
+	"CLICK":0
+}
+
 func _input(event):
 	if !gameOver:
 		if event is InputEventKey:
 			if event.pressed:
+				statistics.TYPING += 1
 				fullFail.add_input()
 				var currentInput = OS.get_scancode_string(event.scancode)
 				textBuffer += currentInput
 				checkTextBufferForKeywords()
 				print(textBuffer)
 				if(currentInput != lastInput):
+					emit_signal("first_input","TYPING")
 					updateSleepMeter(sleepTypeBoost)
 				lastInput = currentInput
 				resetSleepDecay()
 				lastInputTime = Time.get_unix_time_from_datetime_dict(Time.get_datetime_dict_from_system())
 		if event is InputEventMouseMotion:
+			statistics.MOVEMENT += 1
+			emit_signal("first_input","MOVEMENT")
 			updateSleepMeter(mouseMovementBoost)
 		if event is InputEventMouseButton:
 			if("MOUSE" != lastInput):
+				statistics.CLICK += 1
+				emit_signal("first_input","CLICK")
 				updateSleepMeter(sleepTypeBoost)
 			lastInput = "MOUSE"
 	
@@ -298,6 +322,7 @@ func checkTextBufferForKeywords():
 				playSound(keywords[k].playSound[0])
 			if keywords[k].has("penalty"):
 				startPenalty(keywords[k])
+			removeEvent(k)
 	if matchFound:
 		textBuffer = ""
 
@@ -333,7 +358,7 @@ func finishGame() -> void:
 	set_process(false)
 	set_process_input(false)
 	var endTime = Time.get_unix_time_from_datetime_dict(Time.get_datetime_dict_from_system())
-	endGameLabel.text = "Game Jam over!\n Du hast " + parse_endTime(endTime) + " durchgehalten!"
+	endGameLabel.text = "Game Jam over!\n Du hast " + parse_endTime(endTime) + " durchgehalten!\n Dabei hast du:\n"+ str(statistics.MOVEMENT) + " Mausbewegeungen,\n" + str(statistics.CLICK) + " Mausklicks,\n" + str(statistics.TYPING) + " Tastenanschläge,\n" + str(statistics.VOICE) + " Mikrofonevents\nausgelöst!"
 	endGameLabel.show()
 	gameOver = true
 	fullFail.play_tutorial_ending()
@@ -347,7 +372,7 @@ func parse_endTime(endTime) -> String:
 
 func updateSleepMeter(updateValue: float) -> void:
 	sleepMeter += updateValue
-	determineSleepMode()
+	var _mode = determineSleepMode()
 	print(sleepMeter)
 
 
@@ -360,17 +385,36 @@ func _on_IdleSoundTimer_timeout():
 		if(sleepMode[sleepModeValue].idleSounds.size() > 0):
 			mainSoundPlayer.stream = sleepMode[sleepModeValue].idleSounds[0]
 			mainSoundPlayer.play()
-			idleSoundTimer.wait_time = randi() * 10
+			idleSoundTimer.wait_time = randi() * 10 + 1
 
 func _on_EventTimer_timeout() -> void:
 	print("randomEvent")
 	if(!mainSoundPlayer.playing):
 		print("playEvent")
-		events.keys().shuffle()
-		mainSoundPlayer.stream = events.values()[0].sound
+		var keys = events.keys()
+		keys.shuffle()
+		var key = keys[0]
+		var event = events[key]
+		mainSoundPlayer.stream = event.sound
 		mainSoundPlayer.play()
-		eventTimer.wait_time = randi() * 10
-		
+		handleEvent(event, key)
+		eventTimer.wait_time = randi() * 10 + 1
+
+var openEvents = []
+func handleEvent(event, eventKey):
+	if event.has("eventDuration"):
+		openEvents.append(eventKey)
+		yield (get_tree().create_timer(event.eventDuration),"timeout")
+		if openEvents.has(eventKey):
+			#event is failed
+			removeEvent(eventKey)
+			mainSoundPlayer.stream = event.failSound
+			mainSoundPlayer.play()
+			
+func removeEvent(eventName: String):
+	var index = openEvents.find(eventName)
+	if index != -1:
+		openEvents.remove(index)
 
 
 
