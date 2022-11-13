@@ -12,7 +12,8 @@ func add_input():
 	atleastOneInput = true
 
 
-func play_tutorial_ending():
-	if !atleastOneInput:
+func play_tutorial_ending(endTimeInSeconds: int):
+	print(endTimeInSeconds)
+	if !atleastOneInput || endTimeInSeconds <= 35:
 		streamPlayer.stream = tutorial_ending_sound
 		streamPlayer.play()

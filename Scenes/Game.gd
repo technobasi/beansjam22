@@ -25,6 +25,13 @@ export(float) var sleepTypeBoost = 1.0
 export(float) var mouseMovementBoost = 0.001
 export(float) var microphoneBoost = 0.001
 export(int) var DECAY_INCREASE_TIME = 5
+var lastInput = null
+var statistics := {
+	"TYPING":0,
+	"MOVEMENT":0,
+	"VOICE":0,
+	"CLICK":0
+}
 
 var events = {
 	"PIZZA": {
@@ -34,22 +41,25 @@ var events = {
 	},
 	"HELP": {
 		"sound": preload("res://sounds/event_trigger/help_event_trigger.wav"),
-		"eventDuration": 10,
-		"failSound": preload("res://sounds/event_fail/pizza_event_fail.wav")
+
 	},
 	"COLA": {
 		"sound": preload("res://sounds/event_trigger/cola_event_trigger.wav"),
-		"eventDuration": 10,
-		"failSound": preload("res://sounds/event_fail/pizza_event_fail.wav")
+
 	},
 	"KAFFEE": {
 		"sound": preload("res://sounds/event_trigger/kaffee_event_trigger.wav"),
-		"eventDuration": 10,
-		"failSound": preload("res://sounds/event_fail/pizza_event_fail.wav")
+
 	}
 }
 
 var keywords := {
+	"CREDITS": {
+		"value":0,
+		"playSound": [
+			preload("res://sounds/credits/credits.wav")
+		]
+	},
 	"COLA": {
 		"value": 10,
 		"playSound": [
@@ -270,13 +280,6 @@ func _process(_delta: float) -> void:
 			lastInputTime = now
 			print("sleepDecay increased")
 	pass
-var lastInput = null
-var statistics := {
-	"TYPING":0,
-	"MOVEMENT":0,
-	"VOICE":0,
-	"CLICK":0
-}
 
 func _input(event):
 	if !gameOver:
@@ -361,10 +364,13 @@ func finishGame() -> void:
 	endGameLabel.text = "Game Jam over!\n Du hast " + parse_endTime(endTime) + " durchgehalten!\n Dabei hast du:\n"+ str(statistics.MOVEMENT) + " Mausbewegeungen,\n" + str(statistics.CLICK) + " Mausklicks,\n" + str(statistics.TYPING) + " Tastenanschläge,\n" + str(statistics.VOICE) + " Mikrofonevents\nausgelöst!"
 	endGameLabel.show()
 	gameOver = true
-	fullFail.play_tutorial_ending()
+	fullFail.play_tutorial_ending(calculate_endTimeInSeconds(endTime))
+
+func calculate_endTimeInSeconds(endTime:int) -> int:
+	return endTime - Time.get_unix_time_from_datetime_dict(startTime)
 	
 func parse_endTime(endTime) -> String:
-	var timeDiffInSeconds = endTime - Time.get_unix_time_from_datetime_dict(startTime)
+	var timeDiffInSeconds = calculate_endTimeInSeconds(endTime)
 	if(timeDiffInSeconds > 60):
 		return str(timeDiffInSeconds / 60) + " Minuten & " + str(timeDiffInSeconds % 60) +" Sekunden"
 	else:
@@ -410,6 +416,9 @@ func handleEvent(event, eventKey):
 			removeEvent(eventKey)
 			mainSoundPlayer.stream = event.failSound
 			mainSoundPlayer.play()
+			updateSleepMeter(-5)
+		else:
+			updateSleepMeter(5)
 			
 func removeEvent(eventName: String):
 	var index = openEvents.find(eventName)
